@@ -24,6 +24,8 @@
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/PrintLib.h>
 
+#include <Library/SpiFlashCommonLib.h>
+
 //#define SECTOR_SIZE_64KB  0x10000      // Common 64kBytes sector size
 //#define ALINGED_SIZE  SECTOR_SIZE_64KB
 
@@ -56,123 +58,7 @@ typedef enum {
 
 STATIC EFI_PHYSICAL_ADDRESS     mInternalFdAddress;
 
-EFI_SPI_PROTOCOL  *mSpiProtocol;
-
-/**
-  Read NumBytes bytes of data from the address specified by
-  PAddress into Buffer.
-
-  @param[in]      Address       The starting physical address of the read.
-  @param[in,out]  NumBytes      On input, the number of bytes to read. On output, the number
-                                of bytes actually read.
-  @param[out]     Buffer        The destination data buffer for the read.
-
-  @retval         EFI_SUCCESS       Opertion is successful.
-  @retval         EFI_DEVICE_ERROR  If there is any device errors.
-
-**/
-EFI_STATUS
-EFIAPI
-SpiFlashRead (
-  IN     UINTN     Address,
-  IN OUT UINT32    *NumBytes,
-     OUT UINT8     *Buffer
-  )
-{
-  EFI_STATUS    Status = EFI_SUCCESS;
-  UINTN         Offset = 0;
-
-  ASSERT ((NumBytes != NULL) && (Buffer != NULL));
-
-
-  //if (Address >= (UINTN)PcdGet32 (PcdGbeRomBase) && Address < (UINTN)PcdGet32 (PcdPDRRomBase)) {
-    Offset = Address - (UINTN)PcdGet32 (PcdFlashAreaBaseAddress);
-
-    Status = mSpiProtocol->Execute (
-                               mSpiProtocol,
-                               1, //SPI_READ,
-                               0, //SPI_WREN,
-                               TRUE,
-                               TRUE,
-                               FALSE,
-                               Offset,
-                               BLOCK_SIZE,
-                               Buffer,
-                               EnumSpiRegionAll
-                               );
-    return Status;
-}
-
-/**
-  Write NumBytes bytes of data from Buffer to the address specified by
-  PAddresss.
-
-  @param[in]      Address         The starting physical address of the write.
-  @param[in,out]  NumBytes        On input, the number of bytes to write. On output,
-                                  the actual number of bytes written.
-  @param[in]      Buffer          The source data buffer for the write.
-
-  @retval         EFI_SUCCESS       Opertion is successful.
-  @retval         EFI_DEVICE_ERROR  If there is any device errors.
-
-**/
-EFI_STATUS
-EFIAPI
-SpiFlashWrite (
-  IN     UINTN     Address,
-  IN OUT UINT32    *NumBytes,
-  IN     UINT8     *Buffer
-  )
-{
-  EFI_STATUS                Status;
-  UINTN                     Offset;
-  UINT32                    Length;
-  UINT32                    RemainingBytes;
-
-  ASSERT ((NumBytes != NULL) && (Buffer != NULL));
-  ASSERT (Address >= (UINTN)PcdGet32 (PcdFlashAreaBaseAddress));
-
-  Offset    = Address - (UINTN)PcdGet32 (PcdFlashAreaBaseAddress);
-
-  ASSERT ((*NumBytes + Offset) <= (UINTN)PcdGet32 (PcdFlashAreaSize));
-
-  Status = EFI_SUCCESS;
-  RemainingBytes = *NumBytes;
-
-  while (RemainingBytes > 0) {
-    if (RemainingBytes > SIZE_4KB) {
-      Length = SIZE_4KB;
-    } else {
-      Length = RemainingBytes;
-    }
-    Status = mSpiProtocol->Execute (
-                             mSpiProtocol,
-                             SPI_PROG,
-                             SPI_WREN,
-                             TRUE,
-                             TRUE,
-                             TRUE,
-                             (UINT32) Offset,
-                             Length,
-                             Buffer,
-                             EnumSpiRegionAll
-                             );
-    if (EFI_ERROR (Status)) {
-      break;
-    }
-    RemainingBytes -= Length;
-    Offset += Length;
-    Buffer += Length;
-  }
-
-  //
-  // Actual number of bytes written
-  //
-  *NumBytes -= RemainingBytes;
-
-  return Status;
-}
-
+PCH_SPI_PROTOCOL  *mSpiProtocol;
 
 EFI_STATUS
 InternalReadBlock (
@@ -186,76 +72,6 @@ InternalReadBlock (
   BlockSize = BLOCK_SIZE;
 
   Status = SpiFlashRead ((UINTN) BaseAddress, &BlockSize, ReadBuffer);
-
-  return Status;
-}
-
-/**
-  Erase the block starting at Address.
-
-  @param[in]  Address         The starting physical address of the block to be erased.
-                              This library assume that caller garantee that the PAddress
-                              is at the starting address of this block.
-  @param[in]  NumBytes        On input, the number of bytes of the logical block to be erased.
-                              On output, the actual number of bytes erased.
-
-  @retval     EFI_SUCCESS.      Opertion is successful.
-  @retval     EFI_DEVICE_ERROR  If there is any device errors.
-
-**/
-EFI_STATUS
-EFIAPI
-SpiFlashBlockErase (
-  IN UINTN    Address,
-  IN UINTN    *NumBytes
-  )
-{
-  EFI_STATUS          Status;
-  UINTN               Offset;
-  UINTN               RemainingBytes;
-
-  ASSERT (NumBytes != NULL);
-  ASSERT (Address >= (UINTN)PcdGet32 (PcdFlashAreaBaseAddress));
-
-  Offset    = Address - (UINTN)PcdGet32 (PcdFlashAreaBaseAddress);
-
-  ASSERT ((*NumBytes % SIZE_4KB) == 0);
-  ASSERT ((*NumBytes + Offset) <= (UINTN)PcdGet32 (PcdFlashAreaBaseAddress));
-
-  Status = EFI_SUCCESS;
-  RemainingBytes = *NumBytes;
-
-  //
-  // To adjust the Offset with Bios/Gbe
-  //
-//  if (Address >= (UINTN)PcdGet32 (PcdFlashAreaBaseAddress)) {
-//    Offset = Address - (UINTN)PcdGet32 (PcdFlashAreaBaseAddress);
-
-    while (RemainingBytes > 0) {
-      Status = mSpiProtocol->Execute (
-                               mSpiProtocol,
-                               SPI_SERASE,
-                               SPI_WREN,
-                               FALSE,
-                               TRUE,
-                               FALSE,
-                               (UINT32) Offset,
-                               0,
-                               NULL,
-                               EnumSpiRegionAll
-                               );
-      if (EFI_ERROR (Status)) {
-        break;
-      }
-      RemainingBytes -= SIZE_4KB;
-      Offset         += SIZE_4KB;
-    }
-//  }
-
-  //
-  // Actual number of bytes erased
-  //
-  *NumBytes -= RemainingBytes;
 
   return Status;
 }
@@ -424,10 +240,10 @@ PerformFlashWriteWithProgress (
   EFI_TPL               OldTpl;
   BOOLEAN               FlashError;
   UINT8                 *Buf;
-  UINTN                 LpcBaseAddress;
-  UINT8                 Data8Or;
-  UINT8                 Data8And;
-  UINT8                 BiosCntl;
+  //UINTN                 LpcBaseAddress;
+  //UINT8                 Data8Or;
+  //UINT8                 Data8And;
+  //UINT8                 BiosCntl;
 
   Index             = 0;
   Address           = 0;
@@ -675,7 +491,7 @@ PerformFlashAccessLibConstructor (
   DEBUG((DEBUG_INFO, "PcdFlashAreaBaseAddress - 0x%x\n", mInternalFdAddress));
 
   Status = gBS->LocateProtocol (
-                  &gEfiSpiProtocolGuid,
+                  &gPchSpiProtocolGuid, //tmp?
                   NULL,
                   (VOID **) &mSpiProtocol
                   );
