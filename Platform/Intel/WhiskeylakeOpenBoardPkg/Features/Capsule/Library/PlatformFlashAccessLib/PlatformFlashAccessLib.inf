@@ -42,6 +42,7 @@
   DebugLib
   MemoryAllocationLib
   CacheMaintenanceLib
+  ##SpiFlashCommonLib
 
 [Guids]
   gEdkiiSystemFmpCapsuleConfigFileGuid          ## SOMETIMES_CONSUMES ## GUID

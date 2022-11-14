@@ -143,6 +143,7 @@
 ################################################################################
 
 [LibraryClasses.common]
+  ##SpiFlashCommonLib|$(PLATFORM_SI_PACKAGE)/Pch/Library/SmmSpiFlashCommonLib/SmmSpiFlashCommonLib.inf
   #######################################
   # Edk2 Packages
   #######################################
