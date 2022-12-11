@@ -34,7 +34,7 @@
   # Once the system is rebooted, the signed capsule is authenticated and the firmware is
   # update with the new system firmware version.
   #
-  DEFINE CAPSULE_ENABLE = TRUE
+  DEFINE CAPSULE_ENABLE = FALSE
 
   PLATFORM_NAME                       = $(PLATFORM_PACKAGE)
   PLATFORM_GUID                       = A12B2802-BF37-4886-A307-C060F7929F8F
@@ -89,10 +89,7 @@
 [Components.IA32]
 !include $(PLATFORM_PACKAGE)/Include/Dsc/CorePeiInclude.dsc
 !include $(PLATFORM_SI_PACKAGE)/SiPkgPei.dsc
-!if $(CAPSULE_ENABLE)
-  # FMP image descriptor
-  WhiskeylakeOpenBoardPkg/Features/Capsule/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
-!endif
+
 
 # @todo: Change below line to [Components.$(DXE_ARCH)] after https://bugzilla.tianocore.org/show_bug.cgi?id=2308
 #        is completed
@@ -106,35 +103,6 @@
 !include $(PLATFORM_SI_PACKAGE)/SiPkgBuildOption.dsc
 !include OpenBoardPkgBuildOption.dsc
 
-#######################################
-# Capsule Update
-#######################################
-  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
-    <LibraryClasses>
-!if $(CAPSULE_ENABLE)
-      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
-!else
-      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
-!endif
-  }
-
-!if $(CAPSULE_ENABLE)
-  MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
-
-  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareReportDxe.inf {
-    <LibraryClasses>
-      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
-  }
-  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf {
-    <LibraryClasses>
-      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
-  }
-
-  MdeModulePkg/Application/CapsuleApp/CapsuleApp.inf {
-    <LibraryClasses>
-      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
-  }
-!endif
 
 ################################################################################
 #
@@ -405,6 +373,15 @@
 !endif
   $(PLATFORM_BOARD_PACKAGE)/BiosInfo/BiosInfo.inf
 
+
+  #######################################
+  # Capsule Update
+  #######################################
+!if $(CAPSULE_ENABLE)
+  # FMP image descriptor
+  WhiskeylakeOpenBoardPkg/Features/Capsule/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+!endif
+
 #######################################
 # DXE Components
 #######################################
@@ -524,3 +501,32 @@
   BoardModulePkg/LegacySioDxe/LegacySioDxe.inf
   BoardModulePkg/BoardBdsHookDxe/BoardBdsHookDxe.inf
 
+#######################################
+# Capsule Update
+#######################################
+  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
+    <LibraryClasses>
+!if $(CAPSULE_ENABLE)
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+!else
+      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+!endif
+  }
+
+!if $(CAPSULE_ENABLE)
+  MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
+
+  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareReportDxe.inf {
+    <LibraryClasses>
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+  }
+  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf {
+    <LibraryClasses>
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+  }
+
+  MdeModulePkg/Application/CapsuleApp/CapsuleApp.inf {
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  }
+!endif
