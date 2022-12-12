@@ -1,0 +1,89 @@
+/** @file
+  System Firmware descriptor.
+
+  Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD License
+  which accompanies this distribution.  The full text of the license may be found at
+  http://opensource.org/licenses/bsd-license.php
+
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+**/
+
+#include <PiPei.h>
+#include <Protocol/FirmwareManagement.h>
+#include <Guid/EdkiiSystemFmpCapsule.h>
+
+#define PACKAGE_VERSION                     0xFFFFFFFF
+#define PACKAGE_VERSION_STRING              L"Unknown"
+
+#define CURRENT_FIRMWARE_VERSION            0x00000002
+#define CURRENT_FIRMWARE_VERSION_STRING     L"0x00000002"
+#define LOWEST_SUPPORTED_FIRMWARE_VERSION   0x00000001
+
+#define IMAGE_ID                            SIGNATURE_64('U', 'P', 'X', '_', '_', '_', 'F', 'd')
+#define IMAGE_ID_STRING                     L"UpXFd"
+
+// PcdSystemFmpCapsuleImageTypeIdGuid {         39DBB991    9994    48C8      9F    DB    DC    32    F3    8B    9E    BC}
+#define IMAGE_TYPE_ID_GUID                  { 0x39DBB991, 0x9994, 0x48C8, { 0x9F, 0xDB, 0xDC, 0x32, 0xF3, 0x8B, 0x9E, 0xBC } }
+
+typedef struct {
+  EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR  Descriptor;
+  // real string data
+  CHAR16                                  ImageIdNameStr[sizeof(IMAGE_ID_STRING)/sizeof(CHAR16)];
+  CHAR16                                  VersionNameStr[sizeof(CURRENT_FIRMWARE_VERSION_STRING)/sizeof(CHAR16)];
+  CHAR16                                  PackageVersionNameStr[sizeof(PACKAGE_VERSION_STRING)/sizeof(CHAR16)];
+} IMAGE_DESCRIPTOR;
+
+IMAGE_DESCRIPTOR mImageDescriptor =
+{
+  {
+    EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR_SIGNATURE,
+    sizeof(EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR),
+    sizeof(IMAGE_DESCRIPTOR),
+    PACKAGE_VERSION,                                       // PackageVersion
+    OFFSET_OF (IMAGE_DESCRIPTOR, PackageVersionNameStr),   // PackageVersionName
+    1,                                                     // ImageIndex;
+    {0x0},                                                 // Reserved
+    IMAGE_TYPE_ID_GUID,                                    // ImageTypeId;
+    IMAGE_ID,                                              // ImageId;
+    OFFSET_OF (IMAGE_DESCRIPTOR, ImageIdNameStr),          // ImageIdName;
+    CURRENT_FIRMWARE_VERSION,                              // Version;
+    OFFSET_OF (IMAGE_DESCRIPTOR, VersionNameStr),          // VersionName;
+    {0x0},                                                 // Reserved2
+    0x00800000,                                            // Size;
+    IMAGE_ATTRIBUTE_IMAGE_UPDATABLE |
+      IMAGE_ATTRIBUTE_RESET_REQUIRED |
+      IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED |
+      IMAGE_ATTRIBUTE_IN_USE,                              // AttributesSupported;
+    IMAGE_ATTRIBUTE_IMAGE_UPDATABLE |
+      IMAGE_ATTRIBUTE_RESET_REQUIRED |
+      IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED |
+      IMAGE_ATTRIBUTE_IN_USE,                              // AttributesSetting;
+    0x0,                                                   // Compatibilities;
+    LOWEST_SUPPORTED_FIRMWARE_VERSION,                      // LowestSupportedImageVersion;
+    0x00000000,                                            // LastAttemptVersion;
+    0,                                                     // LastAttemptStatus;
+    {0x0},                                                 // Reserved3
+    0,                                                     // HardwareInstance;
+  },
+  // real string data
+  {IMAGE_ID_STRING},
+  {CURRENT_FIRMWARE_VERSION_STRING},
+  {PACKAGE_VERSION_STRING},
+};
+
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from
+  // removing the data structure from the executable
+  //
+  return (VOID*)&mImageDescriptor;
+}
