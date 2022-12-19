@@ -19,6 +19,18 @@
   DEFINE      DXE_ARCH                  = X64
   DEFINE      TOP_MEMORY_ADDRESS        = 0x0
 
+
+  #
+  # Used to enable/disable capsule update features.  The default is FALSE for disabled.
+  # Add -D CAPSULE_ENABLE to the build command line to enable capsule update features.
+  # The build process generates a capsule update image along with the UEFI application 
+  # CapsuleApp.efi.  These 2 files must be transferred to storage media to in order for 
+  # a user to boot to UEFI Shell and use CapsuleApp.efi to submit the signed capsule.
+  # Once the system is rebooted, the signed capsule is authenticated and the firmware is
+  # update with the new system firmware version.
+  #
+  DEFINE CAPSULE_ENABLE = FALSE
+
   #
   # Default value for OpenBoardPkg.fdf use
   #
@@ -95,6 +107,24 @@
 # Library Class section - list of all Library Classes needed by this board.
 #
 ################################################################################
+
+#######################################
+# Capsule Update
+#######################################
+[LibraryClasses]
+  OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLib.inf
+  IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+!if $(CAPSULE_ENABLE)
+  CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibFmp/DxeCapsuleLib.inf
+!else
+  CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
+!endif
+  EdkiiSystemCapsuleLib|SignedCapsulePkg/Library/EdkiiSystemCapsuleLib/EdkiiSystemCapsuleLib.inf
+  FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+  IniParsingLib|SignedCapsulePkg/Library/IniParsingLib/IniParsingLib.inf
+  PlatformFlashAccessLib|WhiskeylakeOpenBoardPkg/Features/Capsule/Library/PlatformFlashAccessLib/PlatformFlashAccessLib.inf
+
 
 [LibraryClasses.common]
   #######################################
@@ -234,6 +264,14 @@
   #######################################
   DxePolicyBoardConfigLib|$(PROJECT)/Library/DxePolicyBoardConfigLib/DxePolicyBoardConfigLib.inf
 
+[LibraryClasses.common.DXE_RUNTIME_DRIVER]
+  #######################################
+  # Capsule Update
+  #######################################
+!if $(CAPSULE_ENABLE)
+  CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibFmp/DxeRuntimeCapsuleLib.inf
+!endif
+
 [LibraryClasses.X64.DXE_RUNTIME_DRIVER]
   #######################################
   # Edk2 Packages
@@ -332,6 +370,14 @@
   $(PLATFORM_BOARD_PACKAGE)/Features/Tbt/TbtInit/Pei/PeiTbtInit.inf
 !endif
   $(PLATFORM_BOARD_PACKAGE)/BiosInfo/BiosInfo.inf
+
+  #######################################
+  # Capsule Update
+  #######################################
+!if $(CAPSULE_ENABLE)
+  # FMP image descriptor
+  WhiskeylakeOpenBoardPkg/Features/Capsule/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+!endif
 
 #######################################
 # DXE Components
@@ -452,3 +498,32 @@
   BoardModulePkg/LegacySioDxe/LegacySioDxe.inf
   BoardModulePkg/BoardBdsHookDxe/BoardBdsHookDxe.inf
 
+  #######################################
+  # Board Package
+  #######################################
+#  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
+#    <LibraryClasses>
+#!if $(CAPSULE_ENABLE)
+#      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+#!else
+#      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+#!endif
+#  }
+
+!if $(CAPSULE_ENABLE)
+  MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
+
+  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareReportDxe.inf {
+    <LibraryClasses>
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+  }
+  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf {
+    <LibraryClasses>
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+  }
+
+  MdeModulePkg/Application/CapsuleApp/CapsuleApp.inf {
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  }
+!endif
