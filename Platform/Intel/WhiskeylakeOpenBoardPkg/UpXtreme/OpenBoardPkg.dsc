@@ -501,14 +501,14 @@
   #######################################
   # Board Package
   #######################################
-#  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
-#    <LibraryClasses>
-#!if $(CAPSULE_ENABLE)
-#      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
-#!else
-#      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
-#!endif
-#  }
+  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
+    <LibraryClasses>
+!if $(CAPSULE_ENABLE)
+      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
+!else
+      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+!endif
+  }
 
 !if $(CAPSULE_ENABLE)
   MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
