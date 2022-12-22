@@ -506,7 +506,10 @@
 !if $(CAPSULE_ENABLE)
       FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
 !else
-      FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+      # FmpAuthenticationLib|MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
+!endif
+!if gMinPlatformPkgTokenSpaceGuid.PcdSerialTerminalEnable == TRUE
+      NULL|MinPlatformPkg/Library/SerialPortTerminalLib/SerialPortTerminalLib.inf
 !endif
   }
 
