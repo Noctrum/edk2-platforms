@@ -242,7 +242,18 @@ PlatformBootManagerAfterConsole (
   VOID
   )
 {
+  EFI_STATUS                   Status;
+  ESRT_MANAGEMENT_PROTOCOL    *EsrtManagement;
+
   DEBUG ((EFI_D_INFO, "PlatformBootManagerAfterConsole\n"));
+  Status = gBS->LocateProtocol(&gEsrtManagementProtocolGuid, NULL, (VOID **)&EsrtManagement);
+  if (EFI_ERROR(Status)) {
+    EsrtManagement = NULL;
+  }
+  
+  if (EsrtManagement != NULL) {
+    EsrtManagement->SyncEsrtFmp();
+  }
 
   BdsSignalEventAfterConsoleReadyBeforeBootOption ();
 }

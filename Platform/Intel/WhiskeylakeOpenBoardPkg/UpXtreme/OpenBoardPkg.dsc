@@ -29,7 +29,7 @@
   # Once the system is rebooted, the signed capsule is authenticated and the firmware is
   # update with the new system firmware version.
   #
-  DEFINE CAPSULE_ENABLE = FALSE
+  DEFINE CAPSULE_ENABLE = TRUE
 
   #
   # Default value for OpenBoardPkg.fdf use

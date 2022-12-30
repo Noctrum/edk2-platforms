@@ -17,5 +17,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
  #include <Library/PrintLib.h>
  #include <Library/PerformanceLib.h>
  #include <Library/BoardBootManagerLib.h>
+ #include <Protocol/EsrtManagement.h>
 
 #endif

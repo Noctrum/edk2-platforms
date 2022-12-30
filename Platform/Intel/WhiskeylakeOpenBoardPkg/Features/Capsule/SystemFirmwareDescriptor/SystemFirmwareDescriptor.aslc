@@ -19,8 +19,8 @@
 #define PACKAGE_VERSION                     0xFFFFFFFF
 #define PACKAGE_VERSION_STRING              L"Unknown"
 
-#define CURRENT_FIRMWARE_VERSION            0x00000002
-#define CURRENT_FIRMWARE_VERSION_STRING     L"0x00000002"
+#define CURRENT_FIRMWARE_VERSION            0x00000003
+#define CURRENT_FIRMWARE_VERSION_STRING     L"0x00000003"
 #define LOWEST_SUPPORTED_FIRMWARE_VERSION   0x00000001
 
 #define IMAGE_ID                            SIGNATURE_64('U', 'P', 'X', '_', '_', '_', 'F', 'd')

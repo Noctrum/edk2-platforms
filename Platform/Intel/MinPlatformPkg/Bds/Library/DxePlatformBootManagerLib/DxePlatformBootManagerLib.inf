@@ -43,6 +43,7 @@
 
 [Protocols]
   gEfiDxeSmmReadyToLockProtocolGuid              ## PRODUCES
+  gEsrtManagementProtocolGuid                    ## CONSUMES
 
 [Guids]
   gEfiEndOfDxeEventGroupGuid                     ## CONSUMES
