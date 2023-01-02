@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "BdsPlatform.h"
 
 extern UINTN                                   mBootMenuOptionNumber;
+GLOBAL_REMOVE_IF_UNREFERENCED EFI_BOOT_MODE                 gBootMode;
 
 VOID
 ExitPmAuth (
@@ -254,6 +255,14 @@ PlatformBootManagerAfterConsole (
   if (EsrtManagement != NULL) {
     EsrtManagement->SyncEsrtFmp();
   }
+
+  gBootMode = GetBootModeHob();
+  if (gBootMode == BOOT_ON_FLASH_UPDATE) {
+    DEBUG((DEBUG_INFO, "ProcessCapsules Before EndOfDxe......\n"));
+    ProcessCapsules();
+    DEBUG((DEBUG_INFO, "ProcessCapsules Done\n"));
+  }
+
 
   BdsSignalEventAfterConsoleReadyBeforeBootOption ();
 }

@@ -30,6 +30,7 @@
   UefiBootManagerLib
   PerformanceLib
   BoardBootManagerLib
+  CapsuleLib
 
 [Packages]
   MdePkg/MdePkg.dec
