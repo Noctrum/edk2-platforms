@@ -383,6 +383,14 @@ FILE FREEFORM = PCD(gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiPkcs7TestPublicKe
      }
 !endif
 
+!if $(CAPSULE_ENABLE) == TRUE
+INF  MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
+!if $(DXE_ARCHITECTURE) == "X64"
+INF  MdeModulePkg/Universal/CapsulePei/CapsuleX64.inf
+!endif
+!endif
+
+
 
 [FV.FvUefiBoot]
 BlockSize          = $(FLASH_BLOCK_SIZE)

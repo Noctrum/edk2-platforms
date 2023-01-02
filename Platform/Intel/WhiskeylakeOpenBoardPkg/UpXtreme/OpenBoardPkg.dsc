@@ -378,6 +378,7 @@
 !if $(CAPSULE_ENABLE)
   # FMP image descriptor
   WhiskeylakeOpenBoardPkg/Features/Capsule/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+  MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
 !endif
 
 #######################################
@@ -529,5 +530,18 @@
   MdeModulePkg/Application/CapsuleApp/CapsuleApp.inf {
     <LibraryClasses>
       PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  }
+!endif
+
+!if $(CAPSULE_ENABLE) == TRUE
+  MdeModulePkg/Universal/CapsulePei/CapsuleX64.inf {
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/PeiPcdLib/PeiPcdLib.inf
+      MemoryAllocationLib|MdePkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
+      HobLib|MdePkg/Library/PeiHobLib/PeiHobLib.inf
+      CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/SecPeiCpuExceptionHandlerLib.inf
+!if $(SOURCE_DEBUG_ENABLE) == TRUE
+      DebugAgentLib|SourceLevelDebugPkg/Library/DebugAgent/SecPeiDebugAgentLib.inf
+!endif
   }
 !endif
