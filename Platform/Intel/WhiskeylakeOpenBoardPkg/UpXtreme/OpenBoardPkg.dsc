@@ -379,6 +379,7 @@
   # FMP image descriptor
   WhiskeylakeOpenBoardPkg/Features/Capsule/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
   MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
+  WhiskeylakeOpenBoardPkg/PlatformPei/PlatformPei.inf
 !endif
 
 #######################################

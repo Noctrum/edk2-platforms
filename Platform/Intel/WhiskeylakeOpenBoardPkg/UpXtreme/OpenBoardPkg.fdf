@@ -385,6 +385,7 @@ FILE FREEFORM = PCD(gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiPkcs7TestPublicKe
 
 !if $(CAPSULE_ENABLE) == TRUE
 INF  MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
+INF WhiskeylakeOpenBoardPkg/PlatformPei/PlatformPei.inf
 !if $(DXE_ARCHITECTURE) == "X64"
 INF  MdeModulePkg/Universal/CapsulePei/CapsuleX64.inf
 !endif

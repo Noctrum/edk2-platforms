@@ -213,6 +213,13 @@ PlatformBootManagerBeforeConsole (
   //
   BdsSignalEventBeforeConsoleBeforeEndOfDxe ();
 
+  gBootMode = GetBootModeHob();
+  if (gBootMode == BOOT_ON_FLASH_UPDATE) {
+    DEBUG((DEBUG_INFO, "ProcessCapsules Before EndOfDxe......\n"));
+    ProcessCapsules();
+    DEBUG((DEBUG_INFO, "ProcessCapsules Done\n"));
+  }
+
   //
   // Signal End Of Dxe Event
   //
@@ -258,7 +265,7 @@ PlatformBootManagerAfterConsole (
 
   gBootMode = GetBootModeHob();
   if (gBootMode == BOOT_ON_FLASH_UPDATE) {
-    DEBUG((DEBUG_INFO, "ProcessCapsules Before EndOfDxe......\n"));
+    DEBUG((DEBUG_INFO, "ProcessCapsules After ConnectAll......\n"));
     ProcessCapsules();
     DEBUG((DEBUG_INFO, "ProcessCapsules Done\n"));
   }
